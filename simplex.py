@@ -45,6 +45,7 @@ class Simplex:
         self.num_constraints = len(self.constraint_consts)
         self.tableau = None
         self.iteration = 1
+        self.unbounded = False
         np.random.seed(self.seed)
 
         self.make_tableau()
@@ -90,8 +91,13 @@ class Simplex:
                 print(self.tableu_repr())
             pivot = self.get_pivot()
             var_const_div = self.tableau[:, -1] / self.tableau[:, pivot]
+            inf_mask = np.isinf(var_const_div)
+            var_const_div[inf_mask] = 0
             div_positive_nonzero = var_const_div[var_const_div > 0]
-            best_value_div = np.min(div_positive_nonzero)
+            if len(div_positive_nonzero) == 0:
+                self.unbounded = True
+                break
+            best_value_div = np.nanmin(div_positive_nonzero)
             options = np.where(var_const_div == best_value_div)[0]
             best_constraint_index = np.random.choice(options)
 
@@ -101,7 +107,7 @@ class Simplex:
             if self.report_mode:
                 print(f'Pivot {pivot+1}\n'
                       + f'Choose equation {best_constraint_index+1} as pivot from options {options+1}\n'
-                      + f'The indicator is located on ({best_constraint_index+1},{pivot})')
+                      + f'The indicator is located on ({best_constraint_index+1},{pivot+1})')
 
             for constraint_row in range(self.num_constraints+1):
                 if constraint_row != best_constraint_index:
@@ -142,7 +148,7 @@ class Simplex:
             if self.solved:
                 print(f'Solution: {utils.array2poly(self.solution_coefs)} = {self.solution}')
             else:
-                print('Not Solved. Terminated by number of iterations.')
+                print('Not Solved. Terminated by number of iterations or Simplex cannot continue.')
 
 
     def tableu_repr(self):
@@ -152,12 +158,12 @@ class Simplex:
             slack_labels = [f'S{index+1}' for index in range(len(self.constraint_vars)+1)]
             constant_label = [str(const) for const in self.constraint_consts]
             headers = var_labels + slack_labels + ['b']
-            tableu_str = tabulate(self.tableau, headers=headers, tablefmt='grid')
+            tableu_str = tabulate(self.tableau, headers=headers, tablefmt='pipe')
 
         return tableu_str
 
     def stopping_criteria(self):
-        return (self.iteration > self.max_iterations) or self.solved
+        return (self.iteration > self.max_iterations) or self.solved or self.unbounded
 
     def get_pivot(self):
         return np.argmin(self.tableau[-1, :])
@@ -165,11 +171,11 @@ class Simplex:
 
 if __name__ == "__main__":
     print(f'Simplex Report Version {__version__}\n' +
-          f'Reading the linear problem in the file {DEFAULT_FILE_2}')
+          f'Reading the linear problem in the file {DEFAULT_FILE}')
 
-    simplex = Simplex(problem_filename=DEFAULT_FILE_2,
+    simplex = Simplex(problem_filename=DEFAULT_FILE,
                       seed=42,
                       minimization=True,
                       report_mode=True,
-                      description='Example 2')
+                      description='Trabalho 1')
     simplex.solve()
