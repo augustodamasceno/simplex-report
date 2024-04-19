@@ -45,3 +45,8 @@ The input file should consist of text where:
 - The script currently supports "less than or equal to" (`<=`) constraints. If your model requires different types of constraints, you may need to adjust the script accordingly.
 
 By following this input format, you can ensure that your linear programming problems are correctly read and processed by the script.
+
+## Screenshots for the Input File 'problem2.txt'
+![problem2_1.png](img%2Fproblem2_1.png)
+![problem2_2.png](img%2Fproblem2_2.png)
+![problem2_3.png](img%2Fproblem2_3.png)

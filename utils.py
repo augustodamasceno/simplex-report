@@ -13,7 +13,6 @@ __version__ = "1.0"
 __copyright__ = "Copyright (c) 2024, Augusto Damasceno, Elayne Carvalho, N1LB13, pedrojot4, wtnhrr."
 __license__ = "All rights reserved"
 
-
 import numpy as np
 
 
@@ -65,9 +64,17 @@ def array2poly(poly_arr):
     :param poly_arr:
     :return:
     """
-    poly_str = str(np.poly1d(poly_arr))
-    just_poly = poly_str.split('\n')[1]
-    return just_poly
+    poly_str = ''
+    if isinstance(poly_arr, np.ndarray):
+        poly_arr = list(poly_arr)
+    if not isinstance(poly_arr, list):
+        poly_arr = [poly_arr]
+
+    for index, val in enumerate(poly_arr):
+        if val != 0:
+            poly_str += f"{'+' if val >= 0 and index != 0 else ''} {val}X{index+1} "
+
+    return poly_str
 
 
 def problem_summary(objective, constraint_vars, constraint_consts):
@@ -78,10 +85,10 @@ def problem_summary(objective, constraint_vars, constraint_consts):
     :param constraint_consts:
     :return:
     """
-    print(f"Objective Function: {array2poly(objective)}")
-    print(f'Constraints')
+    summary = f"Objective Function: {array2poly(objective)}\nConstraints\n"
     for index, cvar in enumerate(constraint_vars):
-        print(f"{array2poly(cvar)} <= {array2poly(constraint_consts[index])}")
+        summary += f"\t\t\t\t{array2poly(cvar)} <= {constraint_consts[index]}\n"
+    return summary
 
 
 if __name__ == "__main__":
